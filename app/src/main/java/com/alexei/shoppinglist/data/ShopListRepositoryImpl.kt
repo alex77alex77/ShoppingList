@@ -6,12 +6,14 @@ import com.alexei.shoppinglist.domain.ShopItem
 import com.alexei.shoppinglist.domain.ShopListRepository
 
 object ShopListRepositoryImpl : ShopListRepository {
-    private val shopListLD = MutableLiveData<List<ShopItem>>()// mutableListOf<ShopItem>()
-    private val shopItemList = mutableListOf<ShopItem>()
+    private val shopListLD = MutableLiveData<List<ShopItem>>()
+
+
+    private val shopItemList = sortedSetOf<ShopItem>({ o1, o2 -> o1.id.compareTo(o2.id) })//сортировка по ид
     private var autoIncrementId = 0
 
     init {
-        for (i in 0 until 10) {
+        for (i in 0 until 100) {
             var item = ShopItem("Name$i", i, true)
             addShopItem(item)
         }
@@ -47,7 +49,7 @@ object ShopListRepositoryImpl : ShopListRepository {
         return shopListLD
     }
 
-    private fun updateList(){
-        shopListLD.value= shopItemList.toList()//помещаем в LiveData
+    private fun updateList() {
+        shopListLD.value = shopItemList.toList()//помещаем в LiveData
     }
 }
