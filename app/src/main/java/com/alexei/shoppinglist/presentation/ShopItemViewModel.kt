@@ -10,20 +10,18 @@ import com.alexei.shoppinglist.domain.GetShopItemUseCase
 import com.alexei.shoppinglist.domain.ShopItem
 
 class ShopItemViewModel : ViewModel() {
-    private val repository = ShopListRepositoryImpl//---------------изменить реализацию!
+    private val repository = ShopListRepositoryImpl//!!!!!
 
     private val getShopItemUseCase = GetShopItemUseCase(repository)
     private val addItemUseCase = AddShopItemUseCase(repository)
     private val editShopItemUseCase = EditShopItemUseCase(repository)
 
-    private val _inputNameError = MutableLiveData<Boolean>()//ссылка на MutableLiveData изменение значения здесь
+    private val _inputNameError = MutableLiveData<Boolean>()
     val inputNameError: LiveData<Boolean>
-        //из активити подписываться на данную переменную(LiveData-устанавливатьз начения нельзя)
         get() = _inputNameError
 
-    private val _inputCountError = MutableLiveData<Boolean>()//ссылка на MutableLiveData изменение значения здесь
+    private val _inputCountError = MutableLiveData<Boolean>()
     val inputCountError: LiveData<Boolean>
-        //из активити подписываться на данную переменную(LiveData-устанавливатьз начения нельзя)
         get() = _inputCountError
 
     fun getShopItem(itemId: Int) {
@@ -34,9 +32,9 @@ class ShopItemViewModel : ViewModel() {
     fun addShopItem(name: String?, count: String?) {
         val name = parseName(name)
         val count = parseCount(count)
-        val valid = validateField(name, count)//----------------------validate полей
+        val valid = validateField(name, count)
         if (valid) {
-            val newItem = ShopItem(name, count, true)//-------создание модели
+            val newItem = ShopItem(name, count, true)
             addItemUseCase.addItem(newItem)
         }
     }
@@ -45,15 +43,15 @@ class ShopItemViewModel : ViewModel() {
         editShopItemUseCase.editItem(shopItem)
     }
 
-    private fun parseName(name: String?): String {//принимает нулабельную строку возврашает строку
-        return name?.trim() ?: ""//если не null то обрезаем пробелы иначе ""
+    private fun parseName(name: String?): String {
+        return name?.trim() ?: ""
     }
 
-    private fun parseCount(count: String?): Int {//принимает нулабельную строку возврашает число
+    private fun parseCount(count: String?): Int {
         return try {
-            count?.trim()?.toInt() ?: 0//преобразование а Int иначе вернуть ноль
+            count?.trim()?.toInt() ?: 0
         } catch (e: Exception) {
-            0//вернуть ноль, если введено не число
+            0
         }
     }
 
@@ -70,10 +68,10 @@ class ShopItemViewModel : ViewModel() {
         return result
     }
 
-    fun resetErrorName() {//если после показа ошибки пользователь начал ввод то сброс ошибки
+    fun resetErrorName() {
         _inputNameError.value = false
     }
-    fun resetErrorCount() {//если после показа ошибки пользователь начал ввод то сброс ошибки
+    fun resetErrorCount() {
         _inputCountError.value = false
     }
 }
