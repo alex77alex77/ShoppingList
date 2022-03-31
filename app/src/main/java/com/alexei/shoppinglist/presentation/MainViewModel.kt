@@ -20,7 +20,7 @@ class MainViewModel : ViewModel() {
     private val editShopItemUseCase = EditShopItemUseCase(repository)
 
 
-    val shopList = getShopListUseCase.getShopList()//сюда приходит список на который подписываемся в активити
+    val shopList = getShopListUseCase.getShopList()
 
     fun deleteShopItem(item: ShopItem) {
         delShopItemUseCase.deleteItem(item)
