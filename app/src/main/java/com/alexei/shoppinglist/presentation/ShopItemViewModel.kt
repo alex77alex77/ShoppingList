@@ -16,6 +16,10 @@ class ShopItemViewModel : ViewModel() {
     private val addItemUseCase = AddShopItemUseCase(repository)
     private val editShopItemUseCase = EditShopItemUseCase(repository)
 
+    private var _closeActivity = MutableLiveData<Unit>()
+    val closeActivity: LiveData<Unit>
+        get() = _closeActivity
+
     private val _inputNameError = MutableLiveData<Boolean>()
     val inputNameError: LiveData<Boolean>
         get() = _inputNameError
@@ -24,9 +28,14 @@ class ShopItemViewModel : ViewModel() {
     val inputCountError: LiveData<Boolean>
         get() = _inputCountError
 
+    private val _shopItem = MutableLiveData<ShopItem>()
+    val shopItem: LiveData<ShopItem>
+        //----пременная для работы из активити
+        get() = _shopItem
+
     fun getShopItem(itemId: Int) {
         val item = getShopItemUseCase.getShopItem(itemId)
-
+        _shopItem.value = item//полученый елемент устанавливаем в LiveData
     }
 
     fun addShopItem(name: String?, count: String?) {
@@ -36,11 +45,21 @@ class ShopItemViewModel : ViewModel() {
         if (valid) {
             val newItem = ShopItem(name, count, true)
             addItemUseCase.addItem(newItem)
+            finishWork()
         }
     }
 
-    fun editShopItem(shopItem: ShopItem) {
-        editShopItemUseCase.editItem(shopItem)
+    fun editShopItem(name: String?, count: String?) {
+        val name = parseName(name)
+        val count = parseCount(count)
+        val valid = validateField(name, count)
+        if (valid) {
+            _shopItem.value?.let {//---------let выпоняем действия если не содержит null
+                val item =it.copy(name=name,count=count)//--копируем существующий объект и изменяем поля
+                editShopItemUseCase.editItem(item)//--------отправка в метод editItem класса editShopItemUseCase который в конструкторе получает класс ListRepositoryImpl в котором имплементируются все методы интерфейса ShopListRepository
+                finishWork()
+            }
+        }
     }
 
     private fun parseName(name: String?): String {
@@ -62,7 +81,7 @@ class ShopItemViewModel : ViewModel() {
             return false
         }
         if (count <= 0) {
-            _inputCountError.value=true
+            _inputCountError.value = true
             return false
         }
         return result
@@ -71,7 +90,12 @@ class ShopItemViewModel : ViewModel() {
     fun resetErrorName() {
         _inputNameError.value = false
     }
+
     fun resetErrorCount() {
         _inputCountError.value = false
+    }
+
+    private fun finishWork() {
+        _closeActivity.value = Unit
     }
 }
