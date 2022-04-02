@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity() {
 
         shopListAdapter.onShopItemClickListener = {
 
-            val intent=ShopItemActivity.intentEditShopItem(this,it.id)//вернет intent с нужными данными
+            val intent=ShopItemActivity.intentEditShopItem(this,it.id)
             startActivity(intent)
         }
     }
