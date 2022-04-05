@@ -2,20 +2,26 @@ package com.alexei.shoppinglist.presentation
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.alexei.shoppinglist.R
+import com.alexei.shoppinglist.presentation.fragment.ShopItemFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
     private lateinit var viewModel: MainViewModel
     private lateinit var shopListAdapter: ShopListAdapter
+    private var shopItemContainer: FragmentContainerView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+//елемент с таким id присудствует только в макете с альбомной ориентацией
+        shopItemContainer = findViewById(R.id.shopItemContainer)
         setupRecyclerView()
 
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
@@ -24,11 +30,27 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        val fabAddButton=findViewById<FloatingActionButton>(R.id.fabAdd)
+        val fabAddButton = findViewById<FloatingActionButton>(R.id.fabAdd)
         fabAddButton.setOnClickListener {
-            val intent=ShopItemActivity.intentAddShopItem(this)
-            startActivity(intent)
+            if (isBookOrientation()) {
+                val intent = ShopItemActivity.intentAddShopItem(this)
+                startActivity(intent)
+            } else {
+                launchFragment(ShopItemFragment.instanceAddItem())
+            }
         }
+    }
+
+    private fun isBookOrientation(): Boolean {
+        return shopItemContainer == null
+    }
+
+    private fun launchFragment(fragment: Fragment) {
+        supportFragmentManager.popBackStack()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.shopItemContainer, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun setupRecyclerView() {
@@ -62,7 +84,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val item =shopListAdapter.currentList[viewHolder.adapterPosition]
+                val item = shopListAdapter.currentList[viewHolder.adapterPosition]
                 viewModel.deleteShopItem(item)
             }
         }
@@ -76,9 +98,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         shopListAdapter.onShopItemClickListener = {
-
-            val intent=ShopItemActivity.intentEditShopItem(this,it.id)
-            startActivity(intent)
+            if (isBookOrientation()){
+                val intent = ShopItemActivity.intentEditShopItem(this, it.id)
+                startActivity(intent)
+            }else{
+                launchFragment(ShopItemFragment.instanceEditItem(it.id))
+            }
         }
     }
 }

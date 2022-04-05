@@ -4,26 +4,15 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
-import android.widget.Button
-import android.widget.EditText
-import androidx.lifecycle.ViewModelProvider
 import com.alexei.shoppinglist.R
 import com.alexei.shoppinglist.domain.ShopItem
-import com.google.android.material.textfield.TextInputLayout
+import com.alexei.shoppinglist.presentation.fragment.ShopItemFragment
 
 class ShopItemActivity : AppCompatActivity() {
-    private lateinit var viewModel: ShopItemViewModel
-
-    private lateinit var tilName: TextInputLayout
-    private lateinit var tilCount: TextInputLayout
-    private lateinit var etName: EditText
-    private lateinit var etCount: EditText
-    private lateinit var btnSave: Button
 
     private var screenMode = MODE_UNKNOWN
-    private var screenItemId = ShopItem.UNDEFINED_ID
+    private var shopItemId = ShopItem.UNDEFINED_ID
+
 
     companion object {
         private const val EXTRA_SCREEN_MODE = "extra_mode"
@@ -46,111 +35,26 @@ class ShopItemActivity : AppCompatActivity() {
         }
     }
 
-    private fun initViews() {
-        tilName = findViewById(R.id.tilName)
-        etName = findViewById(R.id.etName)
-        tilCount = findViewById(R.id.tilCount)
-        etCount = findViewById(R.id.etCount)
-        btnSave = findViewById(R.id.btnSave)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_shop_item)
-        // ---получаем данные из интента
+
         parseIntent()
-        // ---инициализация ViewModel
-        viewModel = ViewModelProvider(this).get(ShopItemViewModel::class.java)
-        // ---инициализация View элементов
-        initViews()
-        // ---слушатели ввода текста(для сброса ошибки)
-        changeFieldsTextListener()
-        // ---запуск правильного режима экрана
-        setCorrectMode()
-        // ---подписка на все объекты во ViewModel(ShopItemViewModel)
-        observeViewModel()
 
-    }
-
-    private fun observeViewModel() {
-        viewModel.inputCountError.observe(this) {
-            val message = if (it) {
-                getString(R.string.err_input_count)
-            } else {
-                null
-            }
-            tilCount.error = message
-        }
-
-        viewModel.inputNameError.observe(this) {
-            val message = if (it) {
-                getString(R.string.err_input_name)
-            } else {
-                null
-            }
-            tilName.error = message
-        }
-
-        viewModel.closeActivity.observe(this) {//слушатель сработает, когда поток закончит задачу после btnSave.setOnClickListener определенных в разных режимах Activity
-            finish()
+        if (savedInstanceState==null){
+            launchMode()
         }
     }
 
-    private fun setCorrectMode() {
-        when (screenMode) {//---------------выбор режима для инициализации елементов в активити
-            MODE_EDIT -> launchEditMode()
-            MODE_ADD -> launchAddMode()
-        }
-    }
-
-    private fun changeFieldsTextListener() {
-        etName.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-
+    private fun launchMode() {
+        val fragment = when (screenMode) {
+                MODE_EDIT -> ShopItemFragment.instanceEditItem(shopItemId)
+                MODE_ADD -> ShopItemFragment.instanceAddItem()
+                else -> throw RuntimeException("Неизвестный режим экрана $screenMode")
             }
-
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                viewModel.resetErrorName()
-            }
-
-            override fun afterTextChanged(p0: Editable?) {
-
-            }
-        })
-
-        etCount.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-
-            }
-
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                viewModel.resetErrorCount()
-            }
-
-            override fun afterTextChanged(p0: Editable?) {
-
-            }
-        })
-    }
-
-    private fun launchEditMode() {
-        viewModel.getShopItem(screenItemId)//получаем елемент по его id
-        //подписка на этот элемент
-        viewModel.shopItem.observe(this) {
-            //  заполнить поля ввода
-            etName.setText(it.name)
-            etCount.setText(it.count.toString())
-        }
-        btnSave.setOnClickListener {
-            viewModel.editShopItem(etName.text?.toString(), etCount.text?.toString())
-        }
-
-    }
-
-    private fun launchAddMode() {
-        btnSave.setOnClickListener {
-            viewModel.addShopItem(etName.text?.toString(), etCount.text?.toString())
-        }
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.shopItemContainer, fragment)
+            .commit()
     }
 
     private fun parseIntent() {
@@ -159,17 +63,20 @@ class ShopItemActivity : AppCompatActivity() {
         }
 
         val mode = intent.getStringExtra(EXTRA_SCREEN_MODE)
+
         if (mode != MODE_EDIT && mode != MODE_ADD) {
             throw RuntimeException("Неизвестный режим экрана $mode")
         }
 
         screenMode = mode
+
         if (screenMode == MODE_EDIT) {
             if (!intent.hasExtra(EXTRA_SHOP_ITEM_ID)) {
 
                 throw RuntimeException("Параметр идентификатор товара отсутствует")
             }
-            screenItemId = intent.getIntExtra(EXTRA_SHOP_ITEM_ID, ShopItem.UNDEFINED_ID)
+            shopItemId = intent.getIntExtra(EXTRA_SHOP_ITEM_ID, ShopItem.UNDEFINED_ID)
+
         }
     }
 }
