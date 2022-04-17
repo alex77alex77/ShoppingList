@@ -1,27 +1,30 @@
 package com.alexei.shoppinglist.presentation
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.alexei.shoppinglist.R
+import com.alexei.shoppinglist.databinding.ActivityMainBinding
 import com.alexei.shoppinglist.presentation.fragment.ShopItemFragment
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), ShopItemFragment.OnEditingFinishedListener {
+    private lateinit var binding: ActivityMainBinding
+
     private lateinit var viewModel: MainViewModel
     private lateinit var shopListAdapter: ShopListAdapter
-    private var shopItemContainer: FragmentContainerView? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
-//елемент с таким id присудствует только в макете с альбомной ориентацией
-        shopItemContainer = findViewById(R.id.shopItemContainer)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+
         setupRecyclerView()
 
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
@@ -30,19 +33,24 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        val fabAddButton = findViewById<FloatingActionButton>(R.id.fabAdd)
-        fabAddButton.setOnClickListener {
+        binding.fabAdd.setOnClickListener {
             if (isBookOrientation()) {
                 val intent = ShopItemActivity.intentAddShopItem(this)
                 startActivity(intent)
             } else {
+
                 launchFragment(ShopItemFragment.instanceAddItem())
             }
         }
     }
 
+    override fun onEditingFinishedListener() {
+        Toast.makeText(this, "Successful", Toast.LENGTH_SHORT).show()
+        supportFragmentManager.popBackStack()
+    }
+
     private fun isBookOrientation(): Boolean {
-        return shopItemContainer == null
+        return binding.shopItemContainer == null
     }
 
     private fun launchFragment(fragment: Fragment) {
@@ -54,10 +62,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        val rvShopList = findViewById<RecyclerView>(R.id.rv_shop_items)
+
         shopListAdapter = ShopListAdapter()
 
-        with(rvShopList) {
+        with(binding.rvShopItems) {
             adapter = shopListAdapter
             recycledViewPool.setMaxRecycledViews(
                 ShopListAdapter.VIEW_TYPE_ENABLED,
@@ -67,9 +75,10 @@ class MainActivity : AppCompatActivity() {
                 ShopListAdapter.VIEW_TYPE_DISABLED,
                 ShopListAdapter.POOL_RECYCLERVIEW
             )
+
         }
         setupRecyclerViewListener()
-        setupSwipeListener(rvShopList)
+        setupSwipeListener(binding.rvShopItems)
     }
 
     private fun setupSwipeListener(rvShopList: RecyclerView) {
@@ -98,12 +107,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         shopListAdapter.onShopItemClickListener = {
-            if (isBookOrientation()){
+            if (isBookOrientation()) {
                 val intent = ShopItemActivity.intentEditShopItem(this, it.id)
                 startActivity(intent)
-            }else{
+            } else {
                 launchFragment(ShopItemFragment.instanceEditItem(it.id))
             }
         }
     }
+
 }
