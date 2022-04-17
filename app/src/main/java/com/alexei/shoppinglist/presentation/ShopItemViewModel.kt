@@ -30,12 +30,12 @@ class ShopItemViewModel : ViewModel() {
 
     private val _shopItem = MutableLiveData<ShopItem>()
     val shopItem: LiveData<ShopItem>
-        //----пременная для работы из активити
+
         get() = _shopItem
 
     fun getShopItem(itemId: Int) {
         val item = getShopItemUseCase.getShopItem(itemId)
-        _shopItem.value = item//полученый елемент устанавливаем в LiveData
+        _shopItem.value = item
     }
 
     fun addShopItem(name: String?, count: String?) {
@@ -54,9 +54,9 @@ class ShopItemViewModel : ViewModel() {
         val count = parseCount(count)
         val valid = validateField(name, count)
         if (valid) {
-            _shopItem.value?.let {//---------let выпоняем действия если не содержит null
-                val item =it.copy(name=name,count=count)//--копируем существующий объект и изменяем поля
-                editShopItemUseCase.editItem(item)//--------отправка в метод editItem класса editShopItemUseCase который в конструкторе получает класс ListRepositoryImpl в котором имплементируются все методы интерфейса ShopListRepository
+            _shopItem.value?.let {
+                val item =it.copy(name=name,count=count)
+                editShopItemUseCase.editItem(item)
                 finishWork()
             }
         }

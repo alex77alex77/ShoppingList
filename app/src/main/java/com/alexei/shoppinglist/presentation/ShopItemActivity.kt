@@ -4,11 +4,12 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import com.alexei.shoppinglist.R
 import com.alexei.shoppinglist.domain.ShopItem
 import com.alexei.shoppinglist.presentation.fragment.ShopItemFragment
 
-class ShopItemActivity : AppCompatActivity() {
+class ShopItemActivity : AppCompatActivity(),ShopItemFragment.OnEditingFinishedListener {
 
     private var screenMode = MODE_UNKNOWN
     private var shopItemId = ShopItem.UNDEFINED_ID
@@ -78,5 +79,9 @@ class ShopItemActivity : AppCompatActivity() {
             shopItemId = intent.getIntExtra(EXTRA_SHOP_ITEM_ID, ShopItem.UNDEFINED_ID)
 
         }
+    }
+
+    override fun onEditingFinishedListener() {
+        finish()
     }
 }
