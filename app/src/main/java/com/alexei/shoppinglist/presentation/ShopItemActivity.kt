@@ -2,9 +2,8 @@ package com.alexei.shoppinglist.presentation
 
 import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.alexei.shoppinglist.R
 import com.alexei.shoppinglist.domain.ShopItem
 import com.alexei.shoppinglist.presentation.fragment.ShopItemFragment
